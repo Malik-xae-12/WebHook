@@ -4,7 +4,7 @@ import requests
 import time
  
 app = Flask(__name__)
- 
+port = process.env.PORT
 # Sample transaction data (simulate a database)
 transactions = [
     {"transaction_id": "TX001", "amount": 1000, "type": "credit", "status": "pending"},
@@ -49,6 +49,6 @@ def get_all_transactions():
  
  
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port)
  
  
