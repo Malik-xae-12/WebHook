@@ -2,9 +2,13 @@ from flask import Flask, request, jsonify
 import threading
 import requests
 import time
+import os
  
 app = Flask(__name__)
-port = process.env.PORT
+
+# Get port from environment variable (Render provides this) or default to 5000
+port = int(os.environ.get('PORT', 5000))
+
 # Sample transaction data (simulate a database)
 transactions = [
     {"transaction_id": "TX001", "amount": 1000, "type": "credit", "status": "pending"},
@@ -15,8 +19,11 @@ transactions = [
 # --- 🔁 Webhook Endpoint (used in Webhook Activity) ---
 def send_callback(callback_url, result):
     time.sleep(3)  # Simulate processing delay
-    resp = requests.post(callback_url, json=result)
-    print(f"Callback sent! Status code: {resp.status_code}")
+    try:
+        resp = requests.post(callback_url, json=result)
+        print(f"Callback sent! Status code: {resp.status_code}")
+    except Exception as e:
+        print(f"Callback failed: {e}")
  
 @app.route('/process_transaction', methods=['POST'])
 def webhook_endpoint():
@@ -46,9 +53,12 @@ def get_all_transactions():
         "transactions": transactions,
         "status": "success"
     }), 200
- 
+
+# Health check endpoint (useful for Render)
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}), 200
  
 if __name__ == '__main__':
-    app.run(port)
- 
- 
+    # Bind to 0.0.0.0 to accept connections from any IP
+    app.run(host='0.0.0.0', port=port, debug=False)
